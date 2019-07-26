@@ -1,5 +1,5 @@
 # Intro-RL-course-tutorials
-Tutorials created while helping teach an intro to RL course at McGill.
+Tutorials created while helping teach an intro to RL course at McGill for the Master of Management in Analytics program.
 
 These tutorials are supposed to give example use cases for introductory topics in RL. This examples are based upon examples from the first half of Introduction to Reinforcement Learning by Sutton & Barto 2018. The enivronments used are all from OpenAI gym (https://gym.openai.com/).
 
