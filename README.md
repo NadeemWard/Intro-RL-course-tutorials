@@ -1,7 +1,7 @@
 # Intro-RL-course-tutorials
 Tutorials created while helping teach an intro to RL course at McGill for the Master of Management in Analytics program.
 
-These tutorials are supposed to give example use cases for introductory topics in RL. This examples are based upon examples from the first half of Introduction to Reinforcement Learning by Sutton & Barto 2018. The enivronments used are all from OpenAI gym (https://gym.openai.com/).
+These tutorials are supposed to give example use cases for introductory topics in RL. These examples are based on examples from the first half of \"Introduction to Reinforcement Learning\" by Sutton & Barto 2018. The enivronments used are all from OpenAI gym (https://gym.openai.com/).
 
 There are 4 tutorials with the following content:
 
@@ -9,6 +9,3 @@ There are 4 tutorials with the following content:
   - Tutorial 2: Basic Dynamic Programming example using a 'Slippery GridWorld' (https://gym.openai.com/envs/FrozenLake-v0/).
   - BlackJack: Basic Monte Carlo Evaluation and Control example by playing blackjack.
   - Q-learning: Basic Q-learning example on CartPole (https://gym.openai.com/envs/CartPole-v0/).
-
-
-
