@@ -4,14 +4,14 @@ import matplotlib as mpl
 import copy
 from matplotlib import cm
 import numpy as np
-from typing import Callable, Any
+from typing import Callable, Any, Tuple
 
 # Types
 PlayerTotal = int
 DealerCard = int
 UsableAce = bool
 
-State = (PlayerTotal, DealerCard, UsableAce)
+State = Tuple[PlayerTotal, DealerCard, UsableAce]
 
 # Dims
 player_state_space_dim = 32
@@ -24,7 +24,7 @@ def change_policy_to_np_array(policy, policy_type: str = "Function") -> np.ndarr
     '''change policy to numpy array depending on policy_type'''
 
     if policy_type == 'dict':
-        return change_fct_policy_to_np(policy)
+        return change_dict_policy_to_np_array(policy)
 
     # assume its a function
     else:
@@ -44,7 +44,7 @@ def change_fct_policy_to_np(policy: Callable) -> np.ndarray:
         for j in range(dealer_state_space_dim):
             for k in range(ace_state_space_dim):
 
-                policy_arr[i,j,k] = policy(i, j, k)
+                policy_arr[i,j,k] = policy((i, j, k))
 
     return policy_arr
 
@@ -54,20 +54,17 @@ def change_dict_policy_to_np_array(policy: dict) -> np.ndarray:
     policy_arr = np.ones(
         (player_state_space_dim,
         dealer_state_space_dim,
+        ace_state_space_dim,
         action_space_dim
         ))
 
     # default to always hit if not seen in dict
-    policy_arr[:, :, :, 0] = 0
-    policy_arr[:, :, :, 1] = 1
+    policy_arr[:, :, :] = [0, 1]
 
     for state, action_prob in policy.items():
         player_score, dealer_card, ace = state
 
-        # stay
-        policy_arr[player_score, dealer_card, int(ace), 0] = action_prob[0]
-        # hit
-        policy_arr[player_score, dealer_card, int(ace), 1] = action_prob[1]
+        policy_arr[player_score, dealer_card, int(ace)] = action_prob
 
 
     return policy_arr
@@ -75,7 +72,7 @@ def change_dict_policy_to_np_array(policy: dict) -> np.ndarray:
 def argmax_policy(policy:np.ndarray, policy_type = "Function") -> np.ndarray:
     '''
     function to turn policy completely greedy by looking for
-    argmax action over action distribution
+    argmax action over action dimension
     '''
 
     return np.argmax(policy, axis = 3)
@@ -126,7 +123,7 @@ def plot_values(state_val):
     state_val = change_dict_value_fct_to_np(state_val)
 
     # without usable ace
-    fig, ax = plt.subplots(subplot_kw = {"projection": "3d"}, figsize=(12, 9))
+    fig, ax = plt.subplots(subplot_kw = {"projection": "3d"}, figsize=(12, 8))
 
     # specify range of display for player and dealer
     player_range = np.arange(11, 22)
@@ -174,7 +171,7 @@ def plot_policy(policy: Any):
 
     # first plot
     surf = axs[0].imshow(
-        np.flip(policy[10:22,1:11,0][:,:,1]),  # flip so that low player card is at the bottom not top
+        np.flip(policy[10:22,1:11,0, 1], axis=0),  # flip so that low player card is at the bottom not top
         cmap=cm.Blues,
         vmin=0,
         vmax=1,
@@ -197,7 +194,7 @@ def plot_policy(policy: Any):
 
     # second plot
     surf = axs[1].imshow(
-        np.flip(policy[10:22,1:11,1][:,:,1]),  # flip so that low player card is at the bottom not top
+        np.flip(policy[10:22,1:11,1, 1], axis = 0),  # flip so that low player card is at the bottom not top
         cmap=cm.Blues,
         vmin=0,
         vmax=1,
@@ -219,48 +216,3 @@ def plot_policy(policy: Any):
     col_bar.ax.invert_yaxis()  # flip the y axis
 
     plt.show()
-
-# def plot_policy(policy, policy_type = "Function"):
-
-#     player_range = np.arange(11, 22)  # consider from 11 to 21
-#     dealer_range = np.arange(1, 11)  # consider from 1 to 10
-
-#     policy = change_policy_to_np_array(policy, policy_type)
-#     policy_na = policy[11:23, :, 0]
-#     policy_wa = policy[:, 1:11, 1]
-
-#     # Get colors
-#     cmap = cm.get_cmap("Paired")
-#     colors = list([cmap(0.2), cmap(0.8)])
-#     label = ["Stay", "Hit"]
-
-#     # Plot results
-#     plt.figure(figsize=(15, 6))
-#     plt.subplot(121)
-#     plt.pcolor(dealer_range, player_range,
-#                policy_wa, label=label,
-#                cmap=mpl.colors.ListedColormap(colors))
-#     plt.axis([dealer_range.min(), dealer_range.max(),
-#               player_range.min(), player_range.max()])
-#     col_bar = plt.colorbar()
-#     col_bar.set_ticks([0.25, 0.75])
-#     col_bar.set_ticklabels(label)
-#     plt.grid()
-#     plt.xlabel("Dealer Score")
-#     plt.ylabel("Player Score")
-#     plt.title("Policy With an Ace ($\pi$)")
-
-#     plt.subplot(122)
-#     plt.pcolor(dealer_range, player_range,
-#                policy_na, label=label,
-#                cmap=mpl.colors.ListedColormap(colors))
-#     plt.axis([dealer_range.min(), dealer_range.max(),
-#               player_range.min(), player_range.max()])
-#     col_bar = plt.colorbar()
-#     col_bar.set_ticks([0.25, 0.75])
-#     col_bar.set_ticklabels(label)
-#     plt.grid()
-#     plt.xlabel("Dealer Score")
-#     plt.ylabel("Player Score")
-#     plt.title("Policy Without an Ace ($\pi$)")
-#     plt.show()
