@@ -4,7 +4,7 @@ import matplotlib as mpl
 import copy
 from matplotlib import cm
 import numpy as np
-from typing import Callable, Any, Tuple
+from typing import Callable, Any, Tuple, Union, Mapping
 
 # Types
 PlayerTotal = int
@@ -12,12 +12,35 @@ DealerCard = int
 UsableAce = bool
 
 State = Tuple[PlayerTotal, DealerCard, UsableAce]
+ActionProb = np.ndarray[float, float]
 
 # Dims
 player_state_space_dim = 32
 action_space_dim = 2
 dealer_state_space_dim = 11
 ace_state_space_dim = 2
+
+def policy_from_Q(Q:dict) -> dict:
+    mc_policy = {}
+    for state, value in Q.items():
+        action = np.argmax(value)
+        action_hit = action
+        action_stay = 1 - action
+        mc_policy[state] = np.array([action_stay, action_hit])
+
+    return mc_policy
+        
+
+def Q_to_V(Q:dict, policy:Union[Callable, Mapping[State, ActionProb]]) -> dict:
+    '''
+    Function to change Q values into V values
+    '''
+    v={}
+    for state, value in Q.items():
+        action_prob = policy[state] if isinstance(policy, dict) else policy(state)
+        v[state] = np.dot(action_prob, value)
+    
+    return v
 
 # changing policy repr
 def change_policy_to_np_array(policy, policy_type: str = "Function") -> np.ndarray:
@@ -216,3 +239,15 @@ def plot_policy(policy: Any):
     col_bar.ax.invert_yaxis()  # flip the y axis
 
     plt.show()
+    
+def dict_Q_values_to_array(Q_values:dict) -> np.ndarray:
+    
+    policy_arr = np.ones((32, 11, 2, 2))
+    for state in Q_values:
+        player_score, dealer_card, ace = state
+        action = np.argmax(Q_values[state])
+        action_hit = action
+        action_stay = 1 - action
+        policy_arr[player_score, dealer_card, int(ace)] = [action_stay, action_hit]
+        
+    return policy_arr
